@@ -47,11 +47,11 @@ class StatusMenuController: NSObject {
   }
   
   @objc func setContext(_ sender: NSMenuItem) {
-    let savedContext = sender.title
+    let savedContext = "current-context: " + sender.title
     let documentDirectory = FileManager.default.homeDirectoryForCurrentUser
     let fileURL = documentDirectory.appendingPathComponent(".kube/config")
     let config = try! String(contentsOf: fileURL)
-    let setContext = currentContext()
+    let setContext = "current-context: " + currentContext()
     let updatedConfig = config.replacingOccurrences(of: setContext, with: savedContext)
     try! updatedConfig.write(to: fileURL, atomically: false, encoding: String.Encoding.utf8)
     statusMenu.removeAllItems()
