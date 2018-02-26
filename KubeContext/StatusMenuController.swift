@@ -19,13 +19,11 @@ class StatusMenuController: NSObject {
     let icon = NSImage(named: NSImage.Name(rawValue: "statusIcon"))
     icon?.isTemplate = false // "true" is best for dark mode
     statusItem.image = icon
-    
     // Build current context item
     let menuItem = NSMenuItem()
     menuItem.title = "Current Context: " + currentContext()
     menuItem.action = nil
     statusMenu.addItem(menuItem)
-    
     // Build list of remaining contexts
     statusMenu.addItem(NSMenuItem.separator())
     // Call function to list contexts and save in dictionary
@@ -36,8 +34,6 @@ class StatusMenuController: NSObject {
       contextMenuItem.target = self
       statusMenu.addItem(contextMenuItem)
     }
-    
-    
     // Add Separater after iterator
     statusMenu.addItem(NSMenuItem.separator())
     // Create Quit menuItem
@@ -47,50 +43,35 @@ class StatusMenuController: NSObject {
   }
   
   @objc func setContext(_ sender: NSMenuItem) {
+    let kubeConfig = setKubeConfig()
     let savedContext = "current-context: " + sender.title
-    let documentDirectory = FileManager.default.homeDirectoryForCurrentUser
-    let fileURL = documentDirectory.appendingPathComponent(".kube/config")
-    let config = try! String(contentsOf: fileURL)
     let setContext = "current-context: " + currentContext()
-    let updatedConfig = config.replacingOccurrences(of: setContext, with: savedContext)
-    try! updatedConfig.write(to: fileURL, atomically: false, encoding: String.Encoding.utf8)
+    let updatedConfig = kubeConfig!.1.replacingOccurrences(of: setContext, with: savedContext)
+    try! updatedConfig.write(to: kubeConfig!.2, atomically: false, encoding: String.Encoding.utf8)
     statusMenu.removeAllItems()
     constructMenu()
   }
   
   func currentContext() -> String {
-    let documentDirectory = FileManager.default.homeDirectoryForCurrentUser
-    let fileURL = documentDirectory.appendingPathComponent(".kube/config")
-    let config = try! String(contentsOf: fileURL)
-    
-    let delimiter = "\n"
-    let splitConfig = config.components(separatedBy: delimiter)
-    
-    for line in splitConfig {
+    let kubeConfigSplit = setKubeConfig()!.0
+    for line in kubeConfigSplit {
       if let range = line.range(of:"current-context: ") {
         let setContext = line[range.upperBound...]
         return String(setContext)
-        break
       }
     }
     return "String not Set"
   }
   
   func allContexts() -> Array<Any> {
+    let kubeConfigSplit = setKubeConfig()!.0
     // Initialize array
     var everyContext = [String]()
     
-    let documentDirectory = FileManager.default.homeDirectoryForCurrentUser
-    let fileURL = documentDirectory.appendingPathComponent(".kube/config")
-    let config = try! String(contentsOf: fileURL)
-    
-    let delimiter = "\n"
-    let splitConfig = config.components(separatedBy: delimiter)
-    
-    for (index, value) in splitConfig.enumerated() {
+    for (index, value) in kubeConfigSplit.enumerated() {
       if value.range(of:"- context:") != nil {
         let contextLine = index + 3
-        let contextValue = splitConfig[contextLine]
+        let contextValue = kubeConfigSplit[contextLine]
         if let range = contextValue.range(of: "name: ") {
           let aContext = contextValue[range.upperBound...]
           everyContext.append(String(aContext))
@@ -98,6 +79,15 @@ class StatusMenuController: NSObject {
       }
     }
     return(everyContext)
+  }
+  
+  func setKubeConfig() -> ([String], String, URL)? {
+    let documentDirectory = FileManager.default.homeDirectoryForCurrentUser
+    let fileURL = documentDirectory.appendingPathComponent(".kube/config")
+    let config = try! String(contentsOf: fileURL)
+    let delimiter = "\n"
+    let splitConfig = config.components(separatedBy: delimiter)
+    return (splitConfig, config, fileURL)
   }
   
   override func awakeFromNib() {
