@@ -11,6 +11,8 @@
 		83186D3E2043CE0A00968AC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83186D3D2043CE0A00968AC2 /* Assets.xcassets */; };
 		83186D412043CE0A00968AC2 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 83186D3F2043CE0A00968AC2 /* MainMenu.xib */; };
 		83186D4A2043CE4A00968AC2 /* StatusMenuController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83186D492043CE4A00968AC2 /* StatusMenuController.swift */; };
+		83423494204E888000AF7BB7 /* PreferencesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83423492204E888000AF7BB7 /* PreferencesWindow.swift */; };
+		83423495204E888000AF7BB7 /* PreferencesWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 83423493204E888000AF7BB7 /* PreferencesWindow.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +23,8 @@
 		83186D422043CE0A00968AC2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		83186D432043CE0A00968AC2 /* KubeContext.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KubeContext.entitlements; sourceTree = "<group>"; };
 		83186D492043CE4A00968AC2 /* StatusMenuController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuController.swift; sourceTree = "<group>"; };
+		83423492204E888000AF7BB7 /* PreferencesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindow.swift; sourceTree = "<group>"; };
+		83423493204E888000AF7BB7 /* PreferencesWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PreferencesWindow.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +61,8 @@
 				83186D492043CE4A00968AC2 /* StatusMenuController.swift */,
 				83186D3D2043CE0A00968AC2 /* Assets.xcassets */,
 				83186D3F2043CE0A00968AC2 /* MainMenu.xib */,
+				83423492204E888000AF7BB7 /* PreferencesWindow.swift */,
+				83423493204E888000AF7BB7 /* PreferencesWindow.xib */,
 				83186D422043CE0A00968AC2 /* Info.plist */,
 				83186D432043CE0A00968AC2 /* KubeContext.entitlements */,
 			);
@@ -123,6 +129,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				83186D3E2043CE0A00968AC2 /* Assets.xcassets in Resources */,
+				83423495204E888000AF7BB7 /* PreferencesWindow.xib in Resources */,
 				83186D412043CE0A00968AC2 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -135,6 +142,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				83186D4A2043CE4A00968AC2 /* StatusMenuController.swift in Sources */,
+				83423494204E888000AF7BB7 /* PreferencesWindow.swift in Sources */,
 				83186D3C2043CE0A00968AC2 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
