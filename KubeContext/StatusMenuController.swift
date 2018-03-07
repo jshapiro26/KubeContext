@@ -20,7 +20,7 @@ class StatusMenuController: NSObject, PreferencesWindowDelegate {
     icon?.isTemplate = false // "true" is best for dark mode
     statusItem.image = icon
     // Build refresh item
-    let refreshItem = NSMenuItem(title: "Refresh Contexts", action: #selector(StatusMenuController.refreshAll(_:)), keyEquivalent: "r")
+    let refreshItem = NSMenuItem(title: "Reload from: ~/.kube/config", action: #selector(StatusMenuController.refreshAll(_:)), keyEquivalent: "r")
     refreshItem.target = self
     statusMenu.addItem(refreshItem)
     statusMenu.addItem(NSMenuItem.separator())
@@ -59,17 +59,12 @@ class StatusMenuController: NSObject, PreferencesWindowDelegate {
     for item in (statusItem.menu?.items)! {
       if item.title == currentContext() {
         item.state = NSControl.StateValue.on
-        // Read defaults to determine to show context name in
-        // Refactor into function to call and return bool
-        for (key, value) in UserDefaults.standard.dictionaryRepresentation() {
-          if key == "showContextInMenuBar" {
-            let contextInMenuBarPreference = value as! NSNumber
-            if contextInMenuBarPreference == 1 as NSNumber{
-              statusItem.title = " " + item.title
-            } else {
-              statusItem.title = ""
-            }
-          }
+        // During iteration, read preference config file
+        // and determine set or unset context in menu bar
+        if preferencesWindow.preferenceStateValue("read", true)! {
+          statusItem.title = " " + item.title
+        } else {
+          statusItem.title = ""
         }
       } else {
         item.state = NSControl.StateValue.off
@@ -133,12 +128,6 @@ class StatusMenuController: NSObject, PreferencesWindowDelegate {
   
   override func awakeFromNib() {
     preferencesWindow = PreferencesWindow()
-    // Sets default of showing context in menu at run
-    // Refactor to set config file that stores prefs and read from that
-    let defaults = UserDefaults.standard
-    if !defaults.dictionaryRepresentation().keys.contains("showContextInMenuBar") {
-      defaults.set(1, forKey: "showContextInMenuBar")
-    }
     constructMenu()
     // Check and menuitem of current context if changed outside of app (e.g. cli)
     let timer = Timer.scheduledTimer(timeInterval: 0.8, target: self, selector: #selector(indicateCurrentContext), userInfo: nil, repeats: true)
