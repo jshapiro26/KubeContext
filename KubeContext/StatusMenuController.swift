@@ -58,10 +58,19 @@ class StatusMenuController: NSObject, PreferencesWindowDelegate {
   @objc func indicateCurrentContext() {
     for item in (statusItem.menu?.items)! {
       if item.title == currentContext() {
-        //item.onStateImage = #imageLiteral(resourceName: "circle_green")
         item.state = NSControl.StateValue.on
-        // if preference button is selected to show context in menubar then uncomment next line.
-        statusItem.title = " " + item.title
+        // Read defaults to determine to show context name in
+        // Refactor into function to call and return bool
+        for (key, value) in UserDefaults.standard.dictionaryRepresentation() {
+          if key == "showContextInMenuBar" {
+            let contextInMenuBarPreference = value as! NSNumber
+            if contextInMenuBarPreference == 1 as NSNumber{
+              statusItem.title = " " + item.title
+            } else {
+              statusItem.title = ""
+            }
+          }
+        }
       } else {
         item.state = NSControl.StateValue.off
       }
@@ -124,7 +133,12 @@ class StatusMenuController: NSObject, PreferencesWindowDelegate {
   
   override func awakeFromNib() {
     preferencesWindow = PreferencesWindow()
-    //preferencesWindowDelegate = self
+    // Sets default of showing context in menu at run
+    // Refactor to set config file that stores prefs and read from that
+    let defaults = UserDefaults.standard
+    if !defaults.dictionaryRepresentation().keys.contains("showContextInMenuBar") {
+      defaults.set(1, forKey: "showContextInMenuBar")
+    }
     constructMenu()
     // Check and menuitem of current context if changed outside of app (e.g. cli)
     let timer = Timer.scheduledTimer(timeInterval: 0.8, target: self, selector: #selector(indicateCurrentContext), userInfo: nil, repeats: true)
