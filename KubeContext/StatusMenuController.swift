@@ -8,22 +8,26 @@
 
 import Cocoa
 
-class StatusMenuController: NSObject {
+class StatusMenuController: NSObject, PreferencesWindowDelegate {
   
-  // @IBOutlet weak var statusMenu: NSMenu!
   let statusMenu = NSMenu()
   let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+  var preferencesWindow: PreferencesWindow!
   
   func constructMenu() {
     // Set Icon
     let icon = NSImage(named: NSImage.Name(rawValue: "statusIcon"))
     icon?.isTemplate = false // "true" is best for dark mode
     statusItem.image = icon
-    // Build current context item
-    let menuItem = NSMenuItem()
-    menuItem.title = "Current Context: " + currentContext()
-    menuItem.action = nil
-    statusMenu.addItem(menuItem)
+    // Build refresh item
+    let refreshItem = NSMenuItem(title: "Reload from: ~/.kube/config", action: #selector(StatusMenuController.refreshAll(_:)), keyEquivalent: "r")
+    refreshItem.target = self
+    statusMenu.addItem(refreshItem)
+    statusMenu.addItem(NSMenuItem.separator())
+    // Build preferences window
+    let preferencesItem = NSMenuItem(title: "Preferences", action: #selector(StatusMenuController.preferencesClicked(_:)), keyEquivalent: "p")
+    preferencesItem.target = self
+    statusMenu.addItem(preferencesItem)
     // Build list of remaining contexts
     statusMenu.addItem(NSMenuItem.separator())
     // Call function to list contexts and save in dictionary
@@ -40,6 +44,32 @@ class StatusMenuController: NSObject {
     statusMenu.addItem(NSMenuItem(title: "Quit KubeContext", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
     // Write menu
     statusItem.menu = statusMenu
+    // Add checkmark next to current context
+    indicateCurrentContext()
+  }
+  
+  @objc func refreshAll(_ sender: NSMenuItem?) {
+    // Re-contstruct menu; use-case is when you add new contexts
+    // and need to make them appear in the menu
+    statusMenu.removeAllItems()
+    constructMenu()
+  }
+  
+  @objc func indicateCurrentContext() {
+    for item in (statusItem.menu?.items)! {
+      if item.title == currentContext() {
+        item.state = NSControl.StateValue.on
+        // During iteration, read preference config file
+        // and determine set or unset context in menu bar
+        if preferencesWindow.preferenceStateValue("read", true)! {
+          statusItem.title = " " + item.title
+        } else {
+          statusItem.title = ""
+        }
+      } else {
+        item.state = NSControl.StateValue.off
+      }
+    }
   }
   
   @objc func setContext(_ sender: NSMenuItem) {
@@ -48,8 +78,7 @@ class StatusMenuController: NSObject {
     let setContext = "current-context: " + currentContext()
     let updatedConfig = kubeConfig!.1.replacingOccurrences(of: setContext, with: savedContext)
     try! updatedConfig.write(to: kubeConfig!.2, atomically: false, encoding: String.Encoding.utf8)
-    statusMenu.removeAllItems()
-    constructMenu()
+    indicateCurrentContext()
   }
   
   func currentContext() -> String {
@@ -67,7 +96,6 @@ class StatusMenuController: NSObject {
     let kubeConfigSplit = setKubeConfig()!.0
     // Initialize array
     var everyContext = [String]()
-    
     for (index, value) in kubeConfigSplit.enumerated() {
       if value.range(of:"- context:") != nil {
         let contextLine = index + 3
@@ -90,8 +118,20 @@ class StatusMenuController: NSObject {
     return (splitConfig, config, fileURL)
   }
   
+  @objc func preferencesClicked(_ sender: Any) {
+    preferencesWindow.showWindow(nil)
+  }
+  
+  func preferencesDidUpdate() {
+    refreshAll(nil)
+  }
+  
   override func awakeFromNib() {
+    preferencesWindow = PreferencesWindow()
     constructMenu()
+    // Check and menuitem of current context if changed outside of app (e.g. cli)
+    let timer = Timer.scheduledTimer(timeInterval: 0.8, target: self, selector: #selector(indicateCurrentContext), userInfo: nil, repeats: true)
+    timer.fire()
   }
 }
 
